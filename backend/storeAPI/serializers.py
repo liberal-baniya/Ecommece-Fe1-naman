@@ -1,5 +1,12 @@
 from rest_framework import serializers
-from .models import Cart, Rating, Product, Order
+from .models import Cart, Rating, Product, Order, User
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["user_id", "name", "email", "password"]
+        extra_kwargs = {"password": {"write_only": True}}
 
 
 class RatingSerializer(serializers.ModelSerializer):

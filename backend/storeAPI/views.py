@@ -1,12 +1,45 @@
+import uuid
 from rest_framework import generics
 from .models import Order, Product
-from .serializers import CartSerializer, ProductSerializer
+from .serializers import CartSerializer, ProductSerializer, UserSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Cart, Product
 from decimal import Decimal
 from bson.decimal128 import Decimal128
+
+users = []
+
+
+class RegisterUserView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            user_data = serializer.validated_data
+            user_data["user_id"] = str(uuid.uuid4())  # Ensure unique UUID for each user
+            users.append(user_data)
+            return Response(
+                {"message": "User registered successfully!"},
+                status=status.HTTP_201_CREATED,
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LoginUserView(APIView):
+    def post(self, request, *args, **kwargs):
+        email = request.data.get("email")
+        password = request.data.get("password")
+
+        for user in users:
+            if user["email"] == email and user["password"] == password:
+                return Response(
+                    {"message": "Login successful!"}, status=status.HTTP_200_OK
+                )
+
+        return Response(
+            {"error": "Invalid email or password"}, status=status.HTTP_400_BAD_REQUEST
+        )
 
 
 class CartView(APIView):
