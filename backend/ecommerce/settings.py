@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'ecommerce.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "djongo",
-        "NAME": "bookmyshow",
+        "NAME": "shoplane",
         "ENFORCE_SCHEMA": False,
         "CLIENT": {
             "host": "mongodb+srv://thisisnaman24:rjprivacy24@namanjain.qvaefhl.mongodb.net/",

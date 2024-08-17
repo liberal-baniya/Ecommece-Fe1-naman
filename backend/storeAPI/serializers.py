@@ -9,11 +9,11 @@ class RatingSerializer(serializers.ModelSerializer):
         fields = ['id', 'rate', 'count']
 
 class ProductSerializer(serializers.ModelSerializer):
-    rating = RatingSerializer()  # Nested serializer for Rating
+    
 
     class Meta:
         model = Product
-        fields = ['id', 'title', 'description', 'price', 'image', 'category', 'rating']
+        fields = "__all__"
 
 class OrderSerializer(serializers.ModelSerializer):
     products = ProductSerializer(many=True)  # Nested serializer for Product
