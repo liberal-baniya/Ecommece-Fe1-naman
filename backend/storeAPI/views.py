@@ -1,7 +1,12 @@
 import uuid
 from rest_framework import generics
-from .models import Order, Product
-from .serializers import CartSerializer, ProductSerializer, UserSerializer
+from .models import Category, Order, Product
+from .serializers import (
+    CartSerializer,
+    CategorySerializer,
+    ProductSerializer,
+    UserSerializer,
+)
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -75,9 +80,32 @@ class CartView(APIView):
         )
 
 
+class CreateProductView(APIView):
+    def post(self, request):
+        serializer = ProductSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class ProductListView(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+
+
+class CreateCategoryView(APIView):
+    def post(self, request):
+        serializer = CategorySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ListCategoryView(generics.ListAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
 
 
 class SearchView(generics.ListAPIView):
