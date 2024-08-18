@@ -15,7 +15,7 @@ from rest_framework import status
 from .models import Cart, Product
 from decimal import Decimal
 from bson.decimal128 import Decimal128
-
+from rest_framework.pagination import PageNumberPagination
 users = []
 
 
@@ -113,6 +113,7 @@ class ListCategoryView(generics.ListAPIView):
 
 class SearchView(generics.ListAPIView):
     serializer_class = ProductSerializer
+    pagination_class = PageNumberPagination  # This enables pagination
 
     def get_queryset(self):
         query = self.request.query_params.get("q", "")
@@ -121,7 +122,6 @@ class SearchView(generics.ListAPIView):
             if query
             else Product.objects.all()
         )
-
 
 class ProductFilterView(generics.ListAPIView):
 
