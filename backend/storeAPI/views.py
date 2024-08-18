@@ -94,6 +94,7 @@ class CreateProductView(APIView):
 class ProductListView(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    pagination_class = None
 
 
 class CreateCategoryView(APIView):
@@ -120,6 +121,39 @@ class SearchView(generics.ListAPIView):
             if query
             else Product.objects.all()
         )
+
+
+class ProductFilterView(generics.ListAPIView):
+
+    serializer_class = ProductSerializer
+
+    def get_queryset(self):
+        queryset = Product.objects.all()
+        category_id = self.request.query_params.get("category")
+        brand = self.request.query_params.get("brand")
+        min_price = self.request.query_params.get("min_price")
+        max_price = self.request.query_params.get("max_price")
+
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+        if brand:
+            queryset = queryset.filter(brand__iexact=brand)
+        if min_price:
+            queryset = queryset.filter(price__gte=min_price)
+        if max_price:
+            queryset = queryset.filter(price__lte=max_price)
+
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        response_data = {
+            "status": "success",
+            "count": queryset.count(),
+            "results": serializer.data,
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
 
 
 class MyCartView(generics.ListAPIView):
