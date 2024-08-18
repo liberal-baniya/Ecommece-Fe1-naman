@@ -1,10 +1,12 @@
 import uuid
 from rest_framework import generics
-from .models import Category, Order, Product
+from .models import Category, Order, OrderItem, Product, Review
 from .serializers import (
     CartSerializer,
     CategorySerializer,
+    OrderItemSerializer,
     ProductSerializer,
+    ReviewSerializer,
     UserSerializer,
 )
 from rest_framework.views import APIView
@@ -153,3 +155,29 @@ class CheckoutView(APIView):
             {"message": "Checkout successful", "order_id": order.id},
             status=status.HTTP_200_OK,
         )
+
+
+class ProductReviewsView(APIView):
+    def get(self, request, product_id):
+        try:
+            reviews = Review.objects.filter(product_id=product_id, active=True)
+            serializer = ReviewSerializer(reviews, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Review.DoesNotExist:
+            return Response(
+                {"error": "Product not found or no reviews available"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+
+class OrderItemsView(APIView):
+    def get(self, request, order_id):
+        try:
+            order = Order.objects.get(id=order_id)
+            order_items = OrderItem.objects.filter(order=order)
+            serializer = OrderItemSerializer(order_items, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Order.DoesNotExist:
+            return Response(
+                {"error": "Order not found"}, status=status.HTTP_404_NOT_FOUND
+            )
