@@ -1,6 +1,6 @@
 import uuid
-from django.db import models
-
+# from django.db import models
+from djongo import models
 
 # Updated User Model
 class User(models.Model):

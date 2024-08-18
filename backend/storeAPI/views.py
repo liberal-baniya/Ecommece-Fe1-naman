@@ -18,6 +18,11 @@ from bson.decimal128 import Decimal128
 from rest_framework.pagination import PageNumberPagination
 from decimal import Decimal, InvalidOperation
 
+
+from bson.regex import Regex
+from djongo.models import Q
+
+
 users = []
 
 
@@ -127,38 +132,93 @@ class SearchView(generics.ListAPIView):
         )
 
 
+# class ProductFilterView(generics.ListAPIView):
+#     serializer_class = ProductSerializer
+
+#     def get_queryset(self):
+#         queryset = Product.objects.all()
+#         category_id = self.request.query_params.get("category")
+#         brand = self.request.query_params.get("brand")
+#         active = self.request.query_params.get("active")
+#         min_price = self.request.query_params.get("min_price")
+#         max_price = self.request.query_params.get("max_price")
+
+#         if category_id:
+#             queryset = queryset.filter(category_id=category_id)
+#         if brand:
+#             queryset = queryset.filter(brand__iexact=brand)
+#         if active is not None:
+#             # Convert the string to a Python boolean
+#             if active.lower() == "true":
+#                 active = True
+#             elif active.lower() == "false":
+#                 active = False
+#             else:
+#                 raise exceptions.ValidationError(
+#                     "The 'active' parameter must be 'true' or 'false'."
+#                 )
+
+#             queryset = queryset.filter(active=active)
+
+#         if min_price:
+#             try:
+#                 # Convert min_price to Decimal and then to BSON Decimal128
+#                 min_price_decimal = Decimal128(Decimal(min_price))
+#                 queryset = queryset.filter(price__gte=min_price_decimal)
+#             except (InvalidOperation, ValueError):
+#                 raise exceptions.ValidationError(
+#                     "min_price must be a valid decimal number."
+#                 )
+#         if max_price:
+#             try:
+#                 # Convert max_price to Decimal and then to BSON Decimal128
+#                 max_price_decimal = Decimal128(Decimal(max_price))
+#                 queryset = queryset.filter(price__lte=max_price_decimal)
+#             except (InvalidOperation, ValueError):
+#                 raise exceptions.ValidationError(
+#                     "max_price must be a valid decimal number."
+#                 )
+
+#         return queryset
+
+#     def list(self, request, *args, **kwargs):
+#         queryset = self.get_queryset()
+#         serializer = self.get_serializer(queryset, many=True)
+#         response_data = {
+#             "status": "success",
+#             "count": queryset.count(),
+#             "results": serializer.data,
+#         }
+#         return Response(response_data, status=status.HTTP_200_OK)
+
+
 class ProductFilterView(generics.ListAPIView):
     serializer_class = ProductSerializer
 
     def get_queryset(self):
-        queryset = Product.objects.all()
-        category_id = self.request.query_params.get("category")
-        brand = self.request.query_params.get("brand")
-        min_price = self.request.query_params.get("min_price")
-        max_price = self.request.query_params.get("max_price")
+        keyword = self.request.query_params.get("keyword", None)
+        price = self.request.query_params.get("price", None)
 
-        if category_id:
-            queryset = queryset.filter(category_id=category_id)
-        if brand:
-            queryset = queryset.filter(brand__iexact=brand)
-        if min_price:
+        # Start with all products
+        queryset = Product.objects.all()
+
+        if price:
             try:
-                # Convert min_price to Decimal and then to BSON Decimal128
-                min_price_decimal = Decimal128(Decimal(min_price))
-                queryset = queryset.filter(price__gte=min_price_decimal)
-            except (InvalidOperation, ValueError):
-                raise exceptions.ValidationError(
-                    "min_price must be a valid decimal number."
-                )
-        if max_price:
-            try:
-                # Convert max_price to Decimal and then to BSON Decimal128
-                max_price_decimal = Decimal128(Decimal(max_price))
-                queryset = queryset.filter(price__lte=max_price_decimal)
-            except (InvalidOperation, ValueError):
-                raise exceptions.ValidationError(
-                    "max_price must be a valid decimal number."
-                )
+                # Convert price to Decimal for proper comparison
+                print("price before conversion:", type(price))  # str type
+                price = Decimal(price)
+                print("price after 1st conversion:", type(price))  # Decimal type
+
+                # No need to convert to Decimal128; Djongo should handle this
+                queryset = queryset.filter(price__gt=price)
+            except (ValueError, InvalidOperation):
+                raise ValueError("The price parameter must be a valid decimal number.")
+
+        if keyword:
+            # Use Q objects to filter based on 'name' or 'description'
+            queryset = queryset.filter(
+                Q(name__icontains=keyword) | Q(description__icontains=keyword)
+            )
 
         return queryset
 
@@ -171,6 +231,36 @@ class ProductFilterView(generics.ListAPIView):
             "results": serializer.data,
         }
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+# class ProductFilterView(generics.ListAPIView):
+#     serializer_class = ProductSerializer
+
+#     def get_queryset(self):
+#         keyword = self.request.query_params.get("keyword", None)
+#         price = self.request.query_params.get("price", None)
+
+#         # Start with all products
+#         queryset = Product.objects.all()
+
+#         if keyword:
+#             # Use Q objects to filter based on 'name' or 'description'
+#             queryset = queryset.filter(
+#                 Q(price__gt=price) & Q(name__icontains=keyword)
+#                 | Q(description__icontains=keyword)
+#             )
+
+#         return queryset
+
+#     def list(self, request, *args, **kwargs):
+#         queryset = self.get_queryset()
+#         serializer = self.get_serializer(queryset, many=True)
+#         response_data = {
+#             "status": "success",
+#             "count": queryset.count(),
+#             "results": serializer.data,
+#         }
+#         return Response(response_data, status=status.HTTP_200_OK)
 
 
 class MyCartView(generics.ListAPIView):
