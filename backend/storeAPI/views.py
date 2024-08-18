@@ -1,5 +1,5 @@
 import uuid
-from rest_framework import generics
+from rest_framework import generics, status, exceptions
 from .models import Category, Order, OrderItem, Product, Review
 from .serializers import (
     CartSerializer,
@@ -16,6 +16,8 @@ from .models import Cart, Product
 from decimal import Decimal
 from bson.decimal128 import Decimal128
 from rest_framework.pagination import PageNumberPagination
+from decimal import Decimal, InvalidOperation
+
 users = []
 
 
@@ -94,7 +96,8 @@ class CreateProductView(APIView):
 class ProductListView(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    pagination_class = None
+    # pagination_class = None
+    pagination_class = PageNumberPagination
 
 
 class CreateCategoryView(APIView):
@@ -123,8 +126,8 @@ class SearchView(generics.ListAPIView):
             else Product.objects.all()
         )
 
-class ProductFilterView(generics.ListAPIView):
 
+class ProductFilterView(generics.ListAPIView):
     serializer_class = ProductSerializer
 
     def get_queryset(self):
@@ -139,9 +142,23 @@ class ProductFilterView(generics.ListAPIView):
         if brand:
             queryset = queryset.filter(brand__iexact=brand)
         if min_price:
-            queryset = queryset.filter(price__gte=min_price)
+            try:
+                # Convert min_price to Decimal and then to BSON Decimal128
+                min_price_decimal = Decimal128(Decimal(min_price))
+                queryset = queryset.filter(price__gte=min_price_decimal)
+            except (InvalidOperation, ValueError):
+                raise exceptions.ValidationError(
+                    "min_price must be a valid decimal number."
+                )
         if max_price:
-            queryset = queryset.filter(price__lte=max_price)
+            try:
+                # Convert max_price to Decimal and then to BSON Decimal128
+                max_price_decimal = Decimal128(Decimal(max_price))
+                queryset = queryset.filter(price__lte=max_price_decimal)
+            except (InvalidOperation, ValueError):
+                raise exceptions.ValidationError(
+                    "max_price must be a valid decimal number."
+                )
 
         return queryset
 
