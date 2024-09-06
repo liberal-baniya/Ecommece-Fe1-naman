@@ -13,33 +13,22 @@ export default function Category({ categories, productData }) {
   const isShoppingCart = useSelector((state) => state.isShoppingCart);
   const [filteredData, setFilteredData] = useState([]);
 
-const handleCategory = (selectedCategory, event) => {
-  event.preventDefault();
-  
-  // Log the selected category to verify it's correct
-  // console.log("Selected Category:", selectedCategory);
+  const handleCategory = (selectedCategory, event) => {
+    event.preventDefault();
 
-  // Filter the products
-  const filteredProducts = productData.products.filter((product) => {
-    // console.log("Product Category:", product.category); // Log each product category
-    return product.category === selectedCategory;
-  });
+    // Filter the products
+    const filteredProducts = productData.products.filter((product) => {
+      return product.category === selectedCategory;
+    });
 
-  // Log the filtered products
-  // console.log("Filtered Products:", filteredProducts);
-
-  // Update state
-  setFilteredData(filteredProducts);
-};
+    setFilteredData(filteredProducts);
+  };
 
   const handleShoppingCart = (e, id) => {
     e.preventDefault();
     dispatch(isCart(!isShoppingCart));
     dispatch(getCartData(id));
-
-    // Dispatch the action
   };
-  // console.log(isShoppingCart);
 
   return (
     <div className="bg-slate-700">

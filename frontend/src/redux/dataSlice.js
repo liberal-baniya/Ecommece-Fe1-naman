@@ -12,6 +12,7 @@ const initialState = {
   isLoadingCategories: false,
   isLoadingCart: false,
   totalValue: 0,
+  wishlist: [], // New state to handle wishlist
 };
 
 export const dataSlice = createSlice({
@@ -105,6 +106,15 @@ export const dataSlice = createSlice({
         state.totalValue += product.count * product.price;
       });
     },
+    // Wishlist actions
+    addToWishlist(state, action) {
+      state.wishlist.push(action.payload);
+    },
+    removeFromWishlist(state, action) {
+      state.wishlist = state.wishlist.filter(
+        (item) => item.id !== action.payload
+      );
+    },
     setError: (state, action) => {
       state.error = action.payload;
       state.isLoadingProducts = false;
@@ -125,7 +135,9 @@ export const {
   removeCartData,
   totalCartValue,
   setError,
-  setLoadingCart
+  setLoadingCart,
+  addToWishlist,
+  removeFromWishlist,
   
 } = dataSlice.actions;
 

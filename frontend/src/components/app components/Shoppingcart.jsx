@@ -1,21 +1,14 @@
 import { Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { useSelector , useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { removeCartData } from "../../redux/dataSlice";
-
-
 
 export default function Shoppingcart({ handleShoppingCart }) {
   const isShoppingCart = useSelector((state) => state.isShoppingCart);
   const ShoppingCartData = useSelector((state) => state.ShoppingCartData);
-  const totalValue = useSelector((state) => state.totalValue); 
+  const totalValue = useSelector((state) => state.totalValue);
   const dispatch = useDispatch();
-  
-  
-  
-
-  
 
   return (
     <Transition.Root show={isShoppingCart} as={Fragment}>
@@ -83,12 +76,10 @@ export default function Shoppingcart({ handleShoppingCart }) {
                                 <div className="ml-4 flex flex-1 flex-col">
                                   <div>
                                     <div className="flex justify-between text-base font-medium text-gray-900">
-                                      <h3>
-                                        
-                                          {product.title}
-                                        
-                                      </h3>
-                                      <p className="ml-4">${product.price*product.count}</p>
+                                      <h3>{product.title}</h3>
+                                      <p className="ml-4">
+                                        ${product.price * product.count}
+                                      </p>
                                     </div>
                                     <p className="mt-1 text-sm text-gray-500">
                                       {product.brand}
@@ -102,7 +93,9 @@ export default function Shoppingcart({ handleShoppingCart }) {
                                     <div className="flex">
                                       <button
                                         type="button"
-                                        onClick={()=>(dispatch(removeCartData(product.id)))}
+                                        onClick={() =>
+                                          dispatch(removeCartData(product.id))
+                                        }
                                         className="font-medium text-indigo-600 hover:text-indigo-500"
                                       >
                                         Remove

@@ -1,7 +1,34 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 function LoginForm() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  // Fetch registered users from localStorage
+  const registeredUsers = JSON.parse(localStorage.getItem("users")) || [];
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    // Check if the email and password match any user in localStorage
+    const user = registeredUsers.find(
+      (user) => user.email === email && user.password === password
+    );
+
+    if (user) {
+      // Successful login, navigate to the dashboard (or any protected page)
+      setError("");
+      console.log("Login successful:", user);
+      navigate("/"); // Assuming you have a dashboard route
+    } else {
+      // Failed login, show error message
+      setError("Invalid email or password. Please try again.");
+    }
+  };
+
   return (
     <div className="flex min-h-screen flex-col justify-center bg-gray-900 px-6 py-12 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
@@ -16,9 +43,13 @@ function LoginForm() {
       </div>
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form className="space-y-6" action="#" method="POST">
+        {error && <div className="mb-4 text-red-500 text-sm">{error}</div>}
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-100">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium leading-6 text-gray-100"
+            >
               Email address
             </label>
             <div className="mt-2">
@@ -27,6 +58,8 @@ function LoginForm() {
                 name="email"
                 type="email"
                 autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 bg-gray-800 shadow-sm ring-1 ring-inset ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
@@ -35,11 +68,17 @@ function LoginForm() {
 
           <div>
             <div className="flex items-center justify-between">
-              <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-100">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium leading-6 text-gray-100"
+              >
                 Password
               </label>
               <div className="text-sm">
-                <a href="#" className="font-semibold text-indigo-400 hover:text-indigo-300">
+                <a
+                  href="#"
+                  className="font-semibold text-indigo-400 hover:text-indigo-300"
+                >
                   Forgot password?
                 </a>
               </div>
@@ -50,6 +89,8 @@ function LoginForm() {
                 name="password"
                 type="password"
                 autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 bg-gray-800 shadow-sm ring-1 ring-inset ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
@@ -67,8 +108,11 @@ function LoginForm() {
         </form>
 
         <p className="mt-10 text-center text-sm text-gray-400">
-          Not a member?{' '}
-          <Link to="/signup" className="font-semibold leading-6 text-indigo-400 hover:text-indigo-300">
+          Not a member?{" "}
+          <Link
+            to="/signup"
+            className="font-semibold leading-6 text-indigo-400 hover:text-indigo-300"
+          >
             Sign up
           </Link>
         </p>
